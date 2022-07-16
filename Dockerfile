@@ -8,9 +8,9 @@ RUN apt-get upgrade -y
 
 RUN apt-get install sudo curl git nodejs npm jq apache2 wget apt-utils -y
 
-RUN curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+RUN curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
 
-RUN git clone --recurse-submodules https://github.com/begleysm/quakejs.git
+RUN git clone https://github.com/begleysm/quakejs.git
 WORKDIR /quakejs
 RUN npm install
 RUN ls
@@ -25,7 +25,7 @@ RUN rm /var/www/html/index.html && cp /quakejs/html/* /var/www/html/
 COPY ./include/assets/ /var/www/html/assets
 RUN ls /var/www/html
 
-RUN echo "127.0.0.1 content.quakejs.com" >> /etc/hosts
+#RUN echo "127.0.0.1 content.quakejs.com" >> /etc/hosts
 
 WORKDIR /
 ADD entrypoint.sh /entrypoint.sh

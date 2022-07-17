@@ -3,6 +3,7 @@ import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as cdk from "aws-cdk-lib";
 import { getContext } from "./utils";
+
 export class ServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: cdk.StackProps) {
     super(scope, id, props);
@@ -10,7 +11,7 @@ export class ServiceStack extends cdk.Stack {
     const context = getContext(scope);
 
     const whiteListedIps = context.tryGet<string[]>("whiteListedIps") ?? [
-      "0.0.0.0",
+      "0.0.0.0/0",
     ];
     const usePrebuildImage = context.tryGet<string>("usePrebuildImage");
     const useCapacity = context.tryGet<string>("useCapacity") ?? "FARGATE";

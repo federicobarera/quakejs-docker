@@ -1,0 +1,6 @@
+{
+  "app": "npx ts-node --project=tsconfig.json --prefer-ts-exts cdk/bin/create-stack.ts",
+  "context": {
+    "@aws-cdk/core:newStyleStackSynthesis": true
+  }
+}

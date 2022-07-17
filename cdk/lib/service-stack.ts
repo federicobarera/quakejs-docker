@@ -2,13 +2,20 @@ import { Construct } from "constructs";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as cdk from "aws-cdk-lib";
-
-const cpu = 2048;
-const mem = 4096;
-
+import { getContext } from "./utils";
 export class ServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: cdk.StackProps) {
     super(scope, id, props);
+
+    const context = getContext(scope);
+
+    const whiteListedIps = context.tryGet<string[]>("whiteListedIps") ?? [
+      "0.0.0.0",
+    ];
+    const usePrebuildImage = context.tryGet<string>("usePrebuildImage");
+    const useCapacity = context.tryGet<string>("useCapacity") ?? "FARGATE";
+    const cpu = context.tryGet<number>("cpu") ?? 2048;
+    const memory = context.tryGet<number>("memory") ?? 4096;
 
     const vpc = new ec2.Vpc(this, "Vpc", {
       vpcName: "social-quakejs-vpc",
@@ -22,20 +29,26 @@ export class ServiceStack extends cdk.Stack {
 
     cluster.enableFargateCapacityProviders();
 
-    const taskDefinition = new ecs.FargateTaskDefinition(this, "TaskDef", {
-      family: "",
-      cpu: cpu,
-      memoryLimitMiB: mem,
-    });
+    const taskDefinition = new ecs.FargateTaskDefinition(
+      this,
+      "QuakeJsTaskDef",
+      {
+        cpu: cpu,
+        memoryLimitMiB: memory,
+      }
+    );
 
     taskDefinition.addContainer("default", {
-      image: ecs.ContainerImage.fromRegistry("federicobarera2/quakejs"),
+      image: !!usePrebuildImage
+        ? ecs.ContainerImage.fromRegistry(usePrebuildImage)
+        : ecs.ContainerImage.fromAsset("./", {
+            exclude: ["cdk.out", "node_modules", "cdk"],
+          }),
       cpu: cpu,
-      memoryLimitMiB: mem,
+      memoryLimitMiB: memory,
       environment: {
         HTTP_PORT: "80",
       },
-
       portMappings: [
         {
           containerPort: 80,
@@ -53,13 +66,15 @@ export class ServiceStack extends cdk.Stack {
       taskDefinition: taskDefinition,
       capacityProviderStrategies: [
         {
-          capacityProvider: "FARGATE",
+          capacityProvider: useCapacity,
           weight: 1,
         },
       ],
     });
 
-    service.connections.allowFromAnyIpv4(ec2.Port.tcp(80));
-    service.connections.allowFromAnyIpv4(ec2.Port.tcp(27960));
+    whiteListedIps.forEach((ip) => {
+      service.connections.allowFrom(ec2.Peer.ipv4(ip), ec2.Port.tcp(80));
+      service.connections.allowFrom(ec2.Peer.ipv4(ip), ec2.Port.tcp(27960));
+    });
   }
 }

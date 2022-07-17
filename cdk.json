@@ -2,5 +2,10 @@
   "app": "npx ts-node --project=tsconfig.json --prefer-ts-exts cdk/bin/create-stack.ts",
   "context": {
     "@aws-cdk/core:newStyleStackSynthesis": true
-  }
+  },
+  "whiteListedIps": null,
+  "usePrebuildImage": "federicobarera2/quakejs:latest",
+  "useCapacity": "FARGATE_SPOT",
+  "cpu": 2048,
+  "memory": 4096
 }

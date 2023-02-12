@@ -7,6 +7,12 @@
 
 </div>
 
+## Introduction
+
+Fork of [treyyoder/quakejs-docker](https://github.com/treyyoder/quakejs-docker). Fixes few issues in source container, assets are now self hosted.
+
+Includes a CDK deployment to host local server with ip restriction in AWS ECS
+
 ## Usage
 
 ### Standalone or internal network
